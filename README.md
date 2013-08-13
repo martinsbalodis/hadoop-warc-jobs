@@ -2,7 +2,8 @@
 
 
 ## Latvian domain name extractor
-This job will extract all domain names from archives and also counts subdomains for each domain.
+
+This job will extract all domain names from archives and also counts subdomains for each domain. Detailed info [here][1]
 
 * Job class: `lv.edu.linux.hadoop.warc.jobs.DomainFinder`
 * Test class `lv.edu.linux.hadoop.warc.jobs.DomainFinderTest`
@@ -19,3 +20,4 @@ stradini.lv     1
 urbanpicture.lv 1
 ```
 
+  [1]: docs/DomainNameExtractor.md
