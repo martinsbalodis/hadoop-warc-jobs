@@ -87,8 +87,15 @@ public class ClueWarcInputFormat extends FileInputFormat<LongWritable, ClueWarcR
 		private Path path = null;
 		private DataInputStream input = null;
 		private long totalNumBytesRead = 0;
+		private int skipSize = 0;
 
 		public ClueWarcRecordReader(Configuration conf, FileSplit split) throws IOException {
+			
+			String SkipSizeStr = conf.get("cluewarcinputformat.skipsize");
+			if(SkipSizeStr != null) {
+				skipSize = Integer.parseInt(SkipSizeStr);
+			}
+			
 			FileSystem fs = FileSystem.get(conf);
 			path = split.getPath();
 
@@ -101,7 +108,7 @@ public class ClueWarcInputFormat extends FileInputFormat<LongWritable, ClueWarcR
 		public boolean next(LongWritable key, ClueWarcRecord value) throws IOException {
 			DataInputStream whichStream = input;
 
-			ClueWarcRecord newRecord = ClueWarcRecord.readNextWarcRecord(whichStream);
+			ClueWarcRecord newRecord = ClueWarcRecord.readNextWarcRecord(whichStream, skipSize);
 			if (newRecord == null) {
 				return false;
 			}

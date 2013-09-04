@@ -109,11 +109,12 @@ public class DomainFinder {
 		// Run this job locally
 		conf.set("mapreduce.jobtracker.address", "local");
 		conf.set("fs.defaultFS", "file:///");
+		conf.set("cluewarcinputformat.skipsize", "4000000");
 
-		String output_dir = "/home/martins/output/";
+		String output_dir = "/home/martins/hadoop/output/";
 		deleteLocalDir(new File(output_dir));
 
-		FileInputFormat.setInputPaths(conf, new Path("/home/martins/warcs"));
+		FileInputFormat.setInputPaths(conf, new Path("/home/martins/hadoop/data/warcs/acis.lv/"));
 		FileOutputFormat.setOutputPath(conf, new Path(output_dir));
 
 		JobClient.runJob(conf);

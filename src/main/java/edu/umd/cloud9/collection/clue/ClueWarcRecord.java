@@ -162,7 +162,7 @@ public class ClueWarcRecord extends Indexable {
 	 * @return the content byts (w/ the headerBuffer populated)
 	 * @throws java.io.IOException
 	 */
-	private static byte[] readNextRecord(DataInputStream in, StringBuffer headerBuffer)
+	private static byte[] readNextRecord(DataInputStream in, StringBuffer headerBuffer, int skipSize)
 			throws IOException {
 		if (in == null) {
 			return null;
@@ -217,6 +217,15 @@ public class ClueWarcRecord extends Indexable {
 		if (contentLength < 0) {
 			return null;
 		}
+		
+		if(contentLength > skipSize) {
+			
+			System.err.println("Ignoring large content "+Float.toString((float)contentLength/1e6f)+" MB");
+			// read buffer to next record
+			in.skipBytes(contentLength);
+			
+			return null;
+		}
 
 		// now read the bytes of the content
 		retContent = new byte[contentLength];
@@ -253,9 +262,9 @@ public class ClueWarcRecord extends Indexable {
 	 * @return a WARC record (or null if eof)
 	 * @throws java.io.IOException
 	 */
-	public static ClueWarcRecord readNextWarcRecord(DataInputStream in) throws IOException {
+	public static ClueWarcRecord readNextWarcRecord(DataInputStream in, int skipSize) throws IOException {
 		StringBuffer recordHeader = new StringBuffer();
-		byte[] recordContent = readNextRecord(in, recordHeader);
+		byte[] recordContent = readNextRecord(in, recordHeader, skipSize);
 		if (recordContent == null) {
 			return null;
 		}
