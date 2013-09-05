@@ -9,21 +9,23 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapred.*;
 
-public class DomainPageCounter {
+public class DomainPageContentTypeCounter {
 
-	public static class DomainPageCounterMapper extends MapReduceBase implements Mapper<Writable, ClueWarcRecord, Text, IntWritable> {
+	public static class DomainPageContentTypeCounterMapper extends MapReduceBase implements Mapper<Writable, ClueWarcRecord, Text, IntWritable> {
 
 		private final static IntWritable one = new IntWritable(1);
 		private final static Pattern domain_finder = Pattern.compile("([a-z0-9][a-z0-9\\-]+\\.)*[a-z0-9][a-z0-9\\-]+\\.[a-z]{2,10}", Pattern.CASE_INSENSITIVE);
-		private Text domain = new Text();
+		private Text result_key = new Text();
 
-		private static String getDomainName(String uri) {
+		private String getDomainName(String uri) {
 			Matcher domain_matches = domain_finder.matcher(uri);
 			if (domain_matches.find()) {
 				return domain_matches.group(0);
 			}
 			return null;
 		}
+		
+		private final static Pattern pattern = Pattern.compile("content-type:\\s*(.*)", Pattern.CASE_INSENSITIVE);
 
 		@Override
 		public void map(Writable key, ClueWarcRecord doc, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
@@ -32,15 +34,28 @@ public class DomainPageCounter {
 
 				String request_uri = doc.getHeaderMetadataItem("WARC-Target-URI");
 				String domain_name = getDomainName(request_uri);
+				String content_type;
 				if (domain_name != null) {
-					domain.set(domain_name);
-					output.collect(domain, one);
+					
+					byte[] byteContent = doc.getByteContent();
+					String content = new String(byteContent);
+					Matcher m = pattern.matcher(content);
+					if (m.find()) {
+						content_type = m.group(1);
+						
+					}
+					else {
+						content_type = "N/A";
+					}
+					
+					result_key.set(domain_name+"	"+content_type);
+					output.collect(result_key, one);
 				}
 			}
 		}
 	}
 
-	public static class DomainPageCounterReducer extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
+	public static class DomainPageContentTypeCounterReducer extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
 
 		@Override
 		public void reduce(Text key, Iterator<IntWritable> values, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
@@ -59,7 +74,7 @@ public class DomainPageCounter {
 
 		// This line specifies the jar Hadoop should use to run the mapper and
 		// reducer by telling it a class that’s inside it
-		conf.setJarByClass(DomainPageCounter.class);
+		conf.setJarByClass(DomainPageContentTypeCounter.class);
 
 		conf.setMapOutputKeyClass(Text.class);
 		conf.setMapOutputValueClass(IntWritable.class);
@@ -67,8 +82,8 @@ public class DomainPageCounter {
 		conf.setOutputKeyClass(Text.class);
 		conf.setOutputValueClass(IntWritable.class);
 
-		conf.setMapperClass(DomainPageCounter.DomainPageCounterMapper.class);
-		conf.setReducerClass(DomainPageCounter.DomainPageCounterReducer.class);
+		conf.setMapperClass(DomainPageContentTypeCounter.DomainPageContentTypeCounterMapper.class);
+		conf.setReducerClass(DomainPageContentTypeCounter.DomainPageContentTypeCounterReducer.class);
 
 		// KeyValueTextInputFormat treats each line as an input record,
 		// and splits the line by the tab character to separate it into key and value
