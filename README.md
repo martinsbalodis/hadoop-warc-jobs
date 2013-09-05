@@ -20,4 +20,10 @@ stradini.lv     1
 urbanpicture.lv 1
 ```
 
+## Domain page counter
+
+This job will count pages found per domain name. Detailed info [here][2]
+
   [1]: docs/DomainNameExtractor.md
+  [2]: docs/DomainPageCounter.md
+
