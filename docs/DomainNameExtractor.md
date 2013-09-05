@@ -30,3 +30,5 @@ urbanpicture.lv 1
 * `mapred.reducer.class` : `lv.edu.linux.hadoop.warc.jobs.DomainFinder$DomainFinderReducer`
 * `mapred.input.format.class` : `edu.umd.cloud9.collection.clue.ClueWarcInputFormat`
 * `mapred.output.format.class` : `org.apache.hadoop.mapred.TextOutputFormat`
+* `cluewarcinputformat.skipsize` : `4000000`
+
